@@ -9,7 +9,7 @@ export DECISION_THRESHOLD=20
 #? paths
 
 # DATA_PATH=./data new place in main
-export RESULT_PATH=./seed/result.db
+export RESULT_DB_PATH=./seed/result.db
 
 #? events
 export NEW_BLOCK_EVENT="new_block_event"

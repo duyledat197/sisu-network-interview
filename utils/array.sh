@@ -37,29 +37,23 @@ string_to_associative_array() {
 #! tested
 create_random_permutation_array() {
   result=$(shuf -e $(seq 1 $1))
-  # n=$1
-  # arr=($(seq 1 $n))
-  # result=($(shuf -e "${arr[@]}"))
   echo ${result[@]}
 }
 
 #! tested
-create_random_permutation_associative_array() {
-  n=$1
-  local -A array
-  arr=($(seq 1 $n))
-  result=($(shuf -e "${arr[@]}"))
-  echo ${result[@]}
-}
-
-#! tested
-generate_random_numbers_from_correct_array() {
+generate_random_some_numbers_from_array() {
   array=("$@")
   size=$(($RANDOM % ${#array[@]} + 1))
-  subset=$(shuf -e "${array[@]}" | head -n $size)
+  local -a subset
+  index=0
+  chosen_indexes=$(shuf -i 0-$((${#array[@]} - 1)) -n $size | sort)
+  for i in ${chosen_indexes[@]}; do
+    subset[$index]=${array[$i]}
+    ((index++))
+  done
+
   echo ${subset[@]}
 }
-
 #! tested
 array_to_associative_array() {
   local -n array=$1
@@ -70,8 +64,10 @@ array_to_associative_array() {
   done
 }
 
-# a=$(create_random_permutation_array 10)
-# echo ${a[@]}
-# declare -A arr
-# array_to_associative_array arr a
-# echo ${arr[@]}
+#! tested
+generate_random_numbers() {
+  local size=$(($RANDOM % $1 + 1))
+  arr=$(seq 1 $size)
+
+  echo $(shuf -e ${arr[@]} | head -n $size)
+}
