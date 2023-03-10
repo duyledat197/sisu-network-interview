@@ -9,9 +9,7 @@ client_request_get_neighbour_nodes() {
   req_str=$(utils_associative_array_to_string req)
   local res_str
 
-  echo $req_str | nc localhost $target_port | while timeout 1s read res_str; do
-    utils_string_to_associative_array "$res_str" res
-  done
+  echo $req_str | nc localhost $target_port
 }
 
 # request_new_block() {

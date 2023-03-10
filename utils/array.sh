@@ -1,5 +1,7 @@
 #!/usr/local/bin/bash
 
+source ./utils/sql.sh
+
 utils_new_associative_array_by_length() {
   n=$1
   local -a arr
@@ -18,26 +20,9 @@ utils_init_associative_array_by_length() {
 }
 
 #! tested
-utils_associative_array_to_string() {
-  local str=""
-  local -n array=$1
-  for key in "${!array[@]}"; do
-    str+="[\"$key\"]=\"${array[$key]}\" "
-  done
-  echo "( $str )"
-}
-
-#! tested
-utils_string_to_associative_array() {
-  local str=$1
-  local -n array=$2
-  array=$str
-}
-
-#! tested
 utils_create_random_permutation_array() {
   result=$(shuf -e $(seq 1 $1))
-  echo ${result[@]}
+  echo "${result[@]}"
 }
 
 #! tested
@@ -47,19 +32,19 @@ utils_generate_random_some_numbers_from_array() {
   local -a subset
   index=0
   chosen_indexes=$(shuf -i 0-$((${#array[@]} - 1)) -n $size | sort)
-  for i in ${chosen_indexes[@]}; do
+  for i in "${chosen_indexes[@]}"; do
     subset[$index]=${array[$i]}
     ((index++))
   done
 
-  echo ${subset[@]}
+  echo "${subset[@]}"
 }
 #! tested
 utils_array_to_associative_array() {
   local -n array=$1
   local -n associative_array=$2
 
-  for i in ${!array[@]}; do
+  for i in "${!array[@]}"; do
     associative_array[$i]=${array[$i]}
   done
 }
@@ -69,5 +54,39 @@ utils_generate_random_numbers() {
   local size=$(($RANDOM % $1 + 1))
   arr=$(seq 1 $size)
 
-  echo $(shuf -e ${arr[@]} | head -n $size)
+  echo $(shuf -e "${arr[@]}" | head -n $size)
+}
+
+#! tested
+utils_associative_array_to_string() {
+  local -a strings
+  local -n array=$1
+  index=0
+  for key in "${!array[@]}"; do
+    k=$(echo "$key" | tr -d " ")
+    strings[$index]="[$k]=${array[$key]}"
+    ((index++))
+  done
+
+  echo $(utils_join_strings strings "|")
+}
+
+#! tested
+utils_string_to_associative_array() {
+  local str=$2
+  local -n arr=$1
+  IFS='|' read -ra elements <<<"$str"
+  for element in "${elements[@]}"; do
+    IFS='=' read -ra pair <<<"$element"
+    key=$(echo ${pair[0]} | tr -d '[]')
+    val=${pair[1]}
+    arr[$key]=$val
+  done
+}
+
+print_associative_array() {
+  local -n array=$1
+  for key in "${!array[@]}"; do
+    echo "[$key]:${array[$key]}"
+  done
 }

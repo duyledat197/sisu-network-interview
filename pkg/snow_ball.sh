@@ -45,7 +45,7 @@ pkg_retrieve_preference() {
     local -A matrix
     local -A preference
     local -A request=(
-      ["target_port"]=${chosen_node[$i, "port"]}
+      ["target_port"]=${chosen_node[$i,port]}
     )
     local -A response
 
@@ -103,7 +103,7 @@ pkg_retrieve_graph() {
   utils_init_associative_array_by_length dept $size
   for ((i = 0; i < $size; i++)); do
     for ((j = 0; j < $size; j++)); do
-      if ${matrix[$i, $j]} == 1; then
+      if ${matrix[$i,$j]} == 1; then
         vertx[${depth[$i]}]=$j
         depth[$i]=$((depth[$i] + 1))
       fi

@@ -18,17 +18,23 @@ fake_client() {
   request["target_port"]=$target_port
   echo "client port: $client_port"
   while true; do
-
-    utils_input input
     local -A response
     client_request_get_neighbour_nodes request response
-    echo "received message: $response"
+
+    nc -l $client_port | while read res_str; do
+    echo $res_str
+    utils_string_to_associative_array response "$res_str"
+    echo "received message: $(print_associative_array response)"
+
+    done
+    sleep 3
   done
 }
 
 fake_server() {
+  set -x
   server_port=9001
-  node_id=$server_port
+  node_id=1
   start_server $node_id $server_port
 }
 
