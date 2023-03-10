@@ -11,5 +11,5 @@ test_flow() {
   export MAX_NODES=10
   seed_all
 }
-migrate_result
+seed_migrate_result
 test_flow

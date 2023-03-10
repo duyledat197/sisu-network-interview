@@ -3,7 +3,7 @@
 # set -x
 
 #! tested
-join_strings() {
+utils_join_strings() {
   arr=("$@")
   delimiter=','
   result=$(printf "${delimiter}%s" "${arr[@]}")
@@ -12,7 +12,7 @@ join_strings() {
 }
 
 #! tested
-get_values() {
+utils_get_values() {
   local -n dta=$1
   local -n pars=$2
   local size=$3
@@ -25,10 +25,10 @@ get_values() {
       val=${dta[$i, $param_name]}
       vals[$j]=$val
     done
-    str="($(join_strings ${vals[@]}))"
+    str="($(utils_join_strings ${vals[@]}))"
     strs[$i]=$str
   done
 
-  echo $(join_strings ${strs[@]})
+  echo $(utils_join_strings ${strs[@]})
   echo ""
 }

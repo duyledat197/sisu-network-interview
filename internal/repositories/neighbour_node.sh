@@ -7,7 +7,7 @@ export DATA_PATH=./data/$NODE_ID.db
 
 declare -a neighbour_node_params=("node_id" "neighbour_id" "neighbour_port" "position")
 
-upsert_neighbour_nodes() {
+repo_upsert_neighbour_nodes() {
   local -n dt=$1
   local size=$2
   for ((i = 0; i < $size; i++)); do
@@ -22,7 +22,7 @@ SET position = EXCLUDED.position;
 EOF
 }
 
-retrieve_neighbour_nodes() {
+repo_retrieve_neighbour_nodes() {
   local node_id=$NODE_ID
   local index=0
   local -n resp=$1

@@ -12,5 +12,5 @@ test_retrieve_graph() {
   local -A vertex
   local -A depth
 
-  retrieve_graph sum_matrix vertex depth $num_node
+  pkg_retrieve_graph sum_matrix vertex depth $num_node
 }

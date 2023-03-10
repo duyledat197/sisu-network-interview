@@ -14,5 +14,5 @@ test_flow() {
   get_result_nodes nodes
   echo ${nodes[@]}
 }
-migrate_result
+seed_migrate_result
 test_flow

@@ -1,9 +1,9 @@
 #!/usr/local/bin/bash
 
-get_matrix_from_nodes() {
+utils_get_matrix_from_nodes() {
   local -n nodes=$1
   local -n result=$2
-  init_square_matrix result $MAX_NODES
+  utils_init_square_matrix result $MAX_NODES
 
   for ((i = 0; i < ${#nodes[@]}; i++)); do
     for ((j = 0; j < $i; j++)); do
@@ -15,7 +15,7 @@ get_matrix_from_nodes() {
 }
 
 #! tested
-compare_matrix() {
+utils_compare_matrix() {
   local -n matrixA=$1
   local -n matrixB=$2
   if [ "${matrixA[*]}" == "${matrixB[*]}" ]; then
@@ -26,7 +26,7 @@ compare_matrix() {
 }
 
 #! tested
-init_square_matrix() {
+utils_init_square_matrix() {
   local -n matrix=$1
   local size=$2
   for ((i = 0; i < $size; i++)); do
@@ -37,7 +37,7 @@ init_square_matrix() {
 }
 
 #! tested
-add_square_matrix() {
+utils_add_square_matrix() {
   local -n matrixA=$1
   local -n matrixB=$2
   local -n res=$3

@@ -1,23 +1,25 @@
 #!/usr/local/bin/bash
 
-snow_ball() {
+pkg_snow_ball() {
   #! load configs
   sample_size=$SAMPLE_SIZE
   node_id=$NODE_ID
 
-  local -A preference
-  init_square_matrix preference $MAX_NODES
+  local -A neighbour_nodes
+  repo_retrieve_neighbour_nodes neighbour_nodes
 
-  neighbour_nodes=($(get_neighbour_nodes))
+  local -A preference
+  utils_init_square_matrix preference $MAX_NODES
+
   consecutiveSuccesses=0
   while; do
-    chosen_nodes=($(generate_random_numbers $neighbour_nodes $sample_size))
-    pref=($(retrieve_preference))
+    chosen_nodes=($(utils_generate_random_some_numbers_from_array ${neighbour_nodes[@]} $sample_size))
+    pref=($(pkg_retrieve_preference chosen_nodes))
     if ${#pref[@]} == 0; then
       consecutiveSuccesses=0
       continue
     fi
-    if $(compare_matrix preference pref); then
+    if $(utils_compare_matrix preference pref); then
       ((consecutiveSuccesses++))
     else
       consecutiveSuccesses=1
@@ -29,7 +31,7 @@ snow_ball() {
   done
 }
 
-retrieve_preference() {
+pkg_retrieve_preference() {
   sample_size=$SAMPLE_SIZE
   alpha=$QUORUM_SIZE
   beta=$DECISION_THRESHOLD
@@ -37,7 +39,7 @@ retrieve_preference() {
   local -A sum_matrix
   local -n chosen_nodes=$1
 
-  init_square_matrix sum_matrix $MAX_NODES
+  utils_init_square_matrix sum_matrix $MAX_NODES
   for i in ${!chosen_nodes[@]}; do
     local -A nodes
     local -A matrix
@@ -47,22 +49,22 @@ retrieve_preference() {
     )
     local -A response
 
-    request_get_neighbour_nodes request response
+    client_request_get_neighbour_nodes request response
     get_relation_matrix ${nodes[@]}
     matrix_addition sum_matrix matrix
   done
 
-  local -A result_matrix=($(init_square_matrix $MAX_NODES))
+  local -A result_matrix
+  utils_init_square_matrix result_matrix $MAX_NODES
   for i in ${!sum_matrix[@]}; do
     if ${sum_matrix[$i]} >= alpha; then
-      sum_matrix[$i]=1
+      result_matrix[$i]=1
     fi
   done
 
   local -A depth
   local -A vertex
-
-  retrieve_graph sum_matrix vertex depth $MAX_NODES
+  pkg_retrieve_graph sum_matrix vertex depth $MAX_NODES
 
   declare -a preference
   index=0
@@ -92,13 +94,13 @@ retrieve_preference() {
 }
 
 #! tested
-retrieve_graph() {
+pkg_retrieve_graph() {
   local -n matrix=$1
   local -n vertx=$2
   local -n dept=$3
   local size=$4
 
-  init_associative_array_by_length dept $size
+  utils_init_associative_array_by_length dept $size
   for ((i = 0; i < $size; i++)); do
     for ((j = 0; j < $size; j++)); do
       if ${matrix[$i, $j]} == 1; then
@@ -109,6 +111,6 @@ retrieve_graph() {
   done
 }
 
-decide() {
-  upsert_neighbour_nodes ${preference[@]}
+pkg_decide() {
+  repo_upsert_neighbour_nodes ${preference[@]}
 }

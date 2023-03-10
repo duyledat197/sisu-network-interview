@@ -1,17 +1,16 @@
 #!/usr/local/bin/bash
 
-request_get_neighbour_nodes() {
-  port=$PORT
+client_request_get_neighbour_nodes() {
   local -n req=$1
   local -n res=$2
   target_port=${req["target_port"]}
-
+  from_port=${req["from_port"]}
   req["event"]=$RETRIEVE_DATA_EVENT
-  req_str=$(associative_array_to_string req)
+  req_str=$(utils_associative_array_to_string req)
   local res_str
 
   echo $req_str | nc localhost $target_port | while timeout 1s read res_str; do
-    string_to_associative_array "$res_str" res
+    utils_string_to_associative_array "$res_str" res
   done
 }
 

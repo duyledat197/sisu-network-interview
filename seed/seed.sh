@@ -1,10 +1,11 @@
 #!/usr/local/bin/bash
 
-migrate_result() {
+source ./seed/repository.sh
+seed_migrate_result() {
   cat ./seed/migrations.sql | sqlite3 $RESULT_DB_PATH
 }
 
-seed_node() {
+seed_init_node() {
   #? load parameters
   local node_id=$1
   local is_correct=$2
@@ -15,10 +16,10 @@ seed_node() {
   # TODO: each node present correct or not
   if $is_correct; then
     local -a result
-    get_result_nodes result
-    neighbour_nodes=($(generate_random_some_numbers_from_array ${result[@]}))
+    seed_get_result_nodes result
+    neighbour_nodes=($(utils_generate_random_some_numbers_from_array ${result[@]}))
   else
-    neighbour_nodes=($(generate_random_numbers $MAX_NODES))
+    neighbour_nodes=($(utils_generate_random_numbers $MAX_NODES))
   fi
   #* write data
   local -A data
@@ -29,25 +30,25 @@ seed_node() {
   done
 
   # working with db
-  migrate_data
-  seed_neighbour_nodes data neighbour_nodes
-  # upsert_neighbour_nodes
+  seed_create_neighbour_nodes data neighbour_nodes
+  repo_create_node
+  # repo_upsert_neighbour_nodes
 }
 
-seed_nodes() {
-  nodes=($(create_random_permutation_array $MAX_NODES))
+seed_init_nodes() {
+  nodes=($(utils_create_random_permutation_array $MAX_NODES))
   correct_from=$(($MAX_NODES * 70 / 100)) #TODO: for 70% nodes storage correct data
   for i in ${!nodes[@]}; do
     is_correct=true
     if [[ i -gt $correct_from ]]; then
       is_correct=false
     fi
-    seed_node ${nodes[$i]} $is_correct
+    seed_init_node ${nodes[$i]} $is_correct
   done
 }
 
 seed_result() {
-  local result=($(create_random_permutation_array $MAX_NODES))
+  local result=($(utils_create_random_permutation_array $MAX_NODES))
   local -A nodes
   for i in ${!result[@]}; do
     nodes[$i, "node_id"]=${result[$i]}
@@ -55,10 +56,10 @@ seed_result() {
     nodes[$i, "port"]=$((9000 + ${result[$i]}))
 
   done
-  create_result_nodes nodes ${#result[@]}
+  seed_create_result_nodes nodes ${#result[@]}
 }
 
 seed_all() {
   seed_result
-  seed_nodes
+  seed_init_nodes
 }

@@ -2,7 +2,7 @@
 
 declare -a result_params=("node_id" "position" "port")
 
-create_result_nodes() {
+seed_create_result_nodes() {
   local -n dt=$1
   local size=$2
 
@@ -12,13 +12,13 @@ create_result_nodes() {
 EOF
 }
 
-get_result_nodes() {
+seed_get_result_nodes() {
   local index=0
   local -n resp=$1
   resp=($(sqlite3 $RESULT_DB_PATH "SELECT node_id FROM result_nodes ORDER BY position ASC;"))
 }
 
-seed_neighbour_nodes() {
+seed_create_neighbour_nodes() {
   local -n dt=$1
   local -n nb_nodes=$2
   sqlite3 -batch -separator $'\t' ./data/$node_id.db \
@@ -32,7 +32,7 @@ seed_neighbour_nodes() {
     WHERE rn.node_id IN ($(join_strings ${nb_nodes[@]}))
 ;"
   params=("node_id" "neighbour_id" "position")
-  local values=$(get_values dt params ${#nb_nodes[@]})
+  local values=$(utils_get_values dt params ${#nb_nodes[@]})
   sqlite3 ./data/$node_id.db \
     "
     INSERT INTO neighbour_nodes (node_id, neighbour_id, position) 

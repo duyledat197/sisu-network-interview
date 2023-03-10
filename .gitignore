@@ -1,3 +1,3 @@
 data
 seed/result.db
-out.log
+*.log
