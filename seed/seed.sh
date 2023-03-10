@@ -1,49 +1,50 @@
 #!/usr/local/bin/bash
 
-#* import
-source ./utils/utils.sh
-source ./internal/repositories/*.sh
-source ./internal/migration.sh
-
 migrate_result() {
-  sqlite3 $RESULT_PATH <<EOF
-  DELETE FROM result_nodes;
-    CREATE TABLE IF NOT EXISTS result_nodes (
-      node_id TEXT,
-      node_order INT
-    );
-EOF
+  cat ./seed/migrations.sql | sqlite3 $RESULT_PATH
 }
 
 seed_node() {
   #? load parameters
-  node_id=$1
-  is_correct=$2
-  create_node_tables $node_id
-  # echo "$node_id"
-  result=($(get_result_node))
+  local node_id=$1
+  local is_correct=$2
+
+  export $NODE_ID=$node_id
+  export $MAX_NODE=10
+  # new_node
+  # migrate
+  # create_node
 
   # TODO: each node present correct or not
-  if [[ $is_correct -eq true ]]; then
-    know_nodes=($(generate_random_numbers_from_correct_array "${result[@]}"))
+  if $is_correct; then
+    local -a result
+    get_result_nodes result
+    know_nodes=($(generate_random_numbers_from_correct_array ${result[@]}))
   else
     know_nodes=($(generate_random_numbers "$MAX_NODES"))
   fi
   #* write data
-  for i in ${know_nodes[@]}; do
-    insert_neighbour_node ${node_id} $i
+  local -A data
+  for i in ${!know_nodes[@]}; do
+    data[$i, "neighbour_id"]=${know_nodes[$i]}
+    data[$i, "neighbour_id"]=${know_nodes[$i]}
   done
+  upsert_neighbour_nodes
 }
 
 seed_result() {
-  create_result_table
-  result=($(create_random_permutation_array $MAX_NODES))
+  local result=($(create_random_permutation_array $MAX_NODES))
+  local -A nodes
   for i in ${!result[@]}; do
-    insert_result_node ${result[$i]} $i
+    nodes[$i, "node_id"]=${result[$i]}
+    nodes[$i, "position"]=$(($i + 1))
+    nodes[$i, "port"]=$(get_min_free_port)
+
   done
+  create_result_nodes nodes ${#result[@]}
 }
 
-seed() {
+seed_all() {
   seed_result
   nodes=($(create_random_permutation_array $MAX_NODES))
   echo "${nodes[@]}"
@@ -56,6 +57,3 @@ seed() {
     seed_node ${nodes[$i]} $is_correct
   done
 }
-
-seed
-migrate_result

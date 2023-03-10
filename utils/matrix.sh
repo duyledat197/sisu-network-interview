@@ -26,18 +26,6 @@ compare_matrix() {
 }
 
 #! tested
-retrieve_depth() {
-  local -n matrix=$1
-  local -n res=$2
-  local size=$3
-  for ((i = 0; i < $size; i++)); do
-    for ((j = 0; j < $size; j++)); do
-      res[$i]=$((res[$i] + matrix[$i, $j]))
-    done
-  done
-}
-
-#! tested
 init_square_matrix() {
   local -n matrix=$1
   local size=$2

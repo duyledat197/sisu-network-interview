@@ -1,22 +1,6 @@
 #!/usr/local/bin/bash
 
 #! tested
-create_random_permutation_array() {
-  n=$1
-  arr=($(seq 1 $n))
-  result=($(shuf -e "${arr[@]}"))
-  echo ${result[@]}
-}
-
-#! tested
-generate_random_numbers_from_correct_array() {
-  array=("$@")
-  size=$(($RANDOM % ${#array[@]} + 1))
-  subset=$(shuf -e "${array[@]}" | head -n $size)
-  echo ${subset[@]}
-}
-
-#! tested
 input() {
   local str
   read -p "input array: " str

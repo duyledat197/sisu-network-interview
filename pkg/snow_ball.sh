@@ -59,7 +59,11 @@ retrieve_preference() {
     fi
   done
 
-  depth=($(retrieve_depth ${result_matrix[@]}))
+  local -A depth
+  local -A vertex
+
+  retrieve_graph sum_matrix vertex depth $MAX_NODES
+
   declare -a preference
   index=0
   declare -a mark
@@ -69,10 +73,10 @@ retrieve_preference() {
       return
     fi
     mark[$u]=1
-    preference[index]=u
-    index++
-    for ((v = 0; v < $MAX_NODES; v++)); do
-      pos=$(get_position $v $u)
+    preference[index]=$u
+    ((index++))
+    for ((v = 0; v < depth[$u]; v++)); do
+      vertex
       depth[$v]=$((depth[$v] - result_matrix[$pos]))
       if ${depth[$v]} == 0; then
         dfs $v
@@ -85,6 +89,24 @@ retrieve_preference() {
     fi
   done
   return ${preference[@]}
+}
+
+#! tested
+retrieve_graph() {
+  local -n matrix=$1
+  local -n vertx=$2
+  local -n dept=$3
+  local size=$4
+
+  init_associative_array_by_length dept $size
+  for ((i = 0; i < $size; i++)); do
+    for ((j = 0; j < $size; j++)); do
+      if ${matrix[$i, $j]} == 1; then
+        vertx[${depth[$i]}]=$j
+        depth[$i]=$((depth[$i] + 1))
+      fi
+    done
+  done
 }
 
 decide() {
