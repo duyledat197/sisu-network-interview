@@ -21,7 +21,8 @@ utils_create_random_permutation_array() {
 #! tested
 utils_generate_random_some_numbers_from_array() {
   local -n array=$1
-  size=$(($RANDOM % ${#array[@]} + 1))
+  half=$((${#array[@]}/2))
+  size=$(($RANDOM %$half + $half))
   local -a subset
   index=0
   shuffled=$(shuf -i 0-$((${#array[@]} - 1)) -n $size | sort)

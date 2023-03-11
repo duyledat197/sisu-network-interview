@@ -40,7 +40,7 @@ fake_server() {
 
 test_flow() {
   fake_client &
-  fake_server &>./out_server.log 2>&1
+  fake_server &
   wait
 }
 

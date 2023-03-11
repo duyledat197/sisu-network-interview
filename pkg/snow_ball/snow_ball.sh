@@ -123,7 +123,6 @@ pkg_retrieve_graph() {
 }
 
 pkg_decide() {
-  inform_port="$INFORM_PORT"
   local -n result=$1
   local -A data
   index=0

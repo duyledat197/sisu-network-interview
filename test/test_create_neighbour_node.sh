@@ -14,5 +14,5 @@ test_flow() {
   repo_upsert_neighbour_nodes data $amount
   repo_retrieve_neighbour_nodes neighbour_nodes
 }
-mogrations_migrate_data
+migrate_data
 test_flow
