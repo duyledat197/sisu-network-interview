@@ -16,4 +16,17 @@ CREATE INDEX IF NOT EXISTS neighbour_nodes_node_id_idx ON neighbour_nodes (node_
 
 CREATE INDEX IF NOT EXISTS neighbour_nodes_node_id_neighbour_id_idx ON neighbour_nodes (node_id, neighbour_id);
 
--- CREATE INDEX IF NOT EXISTS neighbour_nodes_node_id_idx ON neighbour_nodes (node_id);
+DROP TABLE IF EXISTS transactions;
+
+CREATE TABLE IF NOT EXISTS transactions (tx_id TEXT PRIMARY KEY);
+
+DROP TABLE IF EXISTS selections;
+
+CREATE TABLE IF NOT EXISTS selections (
+  selection_id TEXT,
+  neighbour_id INT,
+  data TEXT,
+  UNIQUE (selection_id, neighbour_id)
+);
+
+CREATE INDEX IF NOT EXISTS selections_selection_id_idx ON selections (selection_id);

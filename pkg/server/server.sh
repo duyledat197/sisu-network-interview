@@ -8,8 +8,9 @@ start_server() {
   export DATA_PATH=./data/$NODE_ID.db
 
   echo "node_id=$node_id listening in port=$port"
+
   while true; do
-    nc -l $port | while read req_str; do
+    nc -l "$port" | while read -r req_str; do
       local -A request
       local -A response
       echo "received message: $req_str"
@@ -20,37 +21,16 @@ start_server() {
 
       # handlers
       case $event in
-      $NEW_BLOCK_EVENT)
-        handle_new_block request response
+      "$UPDATE_DATA_EVENT")
+        handle_update_data
         ;;
-      $RETRIEVE_DATA_EVENT)
-        handle_retrieve_neighbour_nodes request response
+      "$REQUEST_DATA_EVENT")
+        handle_request_neighbour_nodes request
         ;;
-      $TESTING_EVENT)
-        # handle_test request response
+      "$RESPONSE_DATA_EVENT")
+        handle_response_neighbour_nodes request
         ;;
       esac
-      local res_str=$(utils_associative_array_to_string response)
-      echo "$res_str"
-      echo $from_port
-      echo $res_str | nc localhost $from_port
     done
   done
-}
-
-handler_new_block() {
-  request=("$@")
-  # snow_ball
-
-}
-
-handle_retrieve_neighbour_nodes() {
-  local -n req=$1
-  local -n res=$2
-  repo_retrieve_neighbour_nodes res
-}
-
-handler_connect_node() {
-  request=("$@")
-  # snow_ball
 }

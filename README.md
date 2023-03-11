@@ -28,6 +28,18 @@ bash -x ./cmd/main.sh 2> out.log
 
 4. The program will start running and display output on the terminal.
 
+## Test commands
+
+```
+bash -x ./test/test_seed_all.sh 2> out.log
+bash -x ./test/test_seed_result.sh 2> out.log
+bash -x ./test/test_retrieve_graph.sh 2> out.log
+bash -x ./test/test_create_neighbour_node.sh 2> out.log
+bash -x ./test/test_tcp.sh 2> out.log
+bash -x ./test/test_snow_ball.sh 2> out.log
+
+```
+
 ## Program Output
 
 The program output will be displayed on the terminal window. If the program generates an output file, it will be saved in the same directory as the program file.

@@ -12,7 +12,7 @@ test_flow() {
   seed_result
   local -a nodes
   get_result_nodes nodes
-  echo ${nodes[@]}
+  echo "${nodes[@]}"
 }
 seed_migrate_result
 test_flow

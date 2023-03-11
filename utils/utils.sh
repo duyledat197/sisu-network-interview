@@ -3,8 +3,8 @@
 #! tested
 utils_input() {
   local -A input
-  read str
-  input=$str
+  read -r str
+  # input=$str
 }
 
 #! tested

@@ -12,5 +12,5 @@ export DECISION_THRESHOLD=20
 export RESULT_DB_PATH=./seed/result.db
 
 #? events
-export NEW_BLOCK_EVENT="new_block_event"
-export RETRIEVE_DATA_EVENT="retrieve_data_event"
+export UPDATE_DATA_EVENT="update_data_event"
+export REQUEST_DATA_EVENT="REQUEST_DATA_EVENT"

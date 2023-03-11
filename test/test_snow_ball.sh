@@ -6,7 +6,7 @@ for f in ./configs/*.sh \
   ./internal/repositories/*.sh \
   \
   ./pkg/**/*.sh; do # ./seed/*.sh \
-  source $f
+  source "$f"
 done
 
 fake_client() {
@@ -21,8 +21,8 @@ fake_client() {
     local -A response
     client_request_get_neighbour_nodes request response
 
-    nc -l $client_port | while read res_str; do
-    echo $res_str
+    nc -l $client_port | while read -r res_str; do
+    echo "$res_str"
     utils_string_to_associative_array response "$res_str"
     echo "received message: $(print_associative_array response)"
 

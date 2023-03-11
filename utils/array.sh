@@ -2,15 +2,8 @@
 
 source ./utils/sql.sh
 
-utils_new_associative_array_by_length() {
-  n=$1
-  local -a arr
-  for ((i = 0; i < $n; i++)); do
-    arr[$i]=0
-  done
-}
 
-utils_init_associative_array_by_length() {
+utils_init_array_by_length() {
   local -n array=$1
   local size=$2
 
@@ -21,21 +14,21 @@ utils_init_associative_array_by_length() {
 
 #! tested
 utils_create_random_permutation_array() {
-  result=$(shuf -e $(seq 1 $1))
+  result=($(shuf -e $(seq 1 $1)))
   echo "${result[@]}"
 }
 
 #! tested
 utils_generate_random_some_numbers_from_array() {
-  array=("$@")
+  local -n array=$1
   size=$(($RANDOM % ${#array[@]} + 1))
   local -a subset
   index=0
-  chosen_indexes=$(shuf -i 0-$((${#array[@]} - 1)) -n $size | sort)
-  for i in "${chosen_indexes[@]}"; do
-    subset[$index]=${array[$i]}
+  shuffled=$(shuf -i 0-$((${#array[@]} - 1)) -n $size | sort)
+  while IFS='' read -r num;do
+    subset[$index]=$num
     ((index++))
-  done
+  done <<< $shuffled
 
   echo "${subset[@]}"
 }
@@ -89,4 +82,15 @@ print_associative_array() {
   for key in "${!array[@]}"; do
     echo "[$key]:${array[$key]}"
   done
+}
+
+#! tested
+utils_compare_array() {
+  local -n matrixA=$1
+  local -n matrixB=$2
+  if [ "${matrixA[*]}" == "${matrixB[*]}" ]; then
+    echo true
+  else
+    echo false
+  fi
 }
