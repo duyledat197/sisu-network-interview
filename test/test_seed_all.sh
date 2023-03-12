@@ -1,5 +1,7 @@
 #!/usr/local/bin/bash
 
+first_port=9000
+
 #? import
 for f in ./utils/*.sh \
  ./seed/*.sh \

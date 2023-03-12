@@ -6,7 +6,7 @@
 utils_join_strings() {
   local -n arr=$1
   local IFS=$2
-  if [[ -z $delimiter ]];then 
+  if [[ -z $IFS ]];then 
     IFS=","
   fi
   shift

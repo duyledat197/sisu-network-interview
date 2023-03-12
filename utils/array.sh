@@ -14,8 +14,9 @@ utils_init_array_by_length() {
 
 #! tested
 utils_create_random_permutation_array() {
-  result=($(shuf -e $(seq 1 $1)))
-  echo "${result[@]}"
+  array=($(seq $1 $(($1 + $2))))
+  shuf_array=($(shuf -e "${array[@]}"))
+  echo "${shuf_array[@]}"
 }
 
 #! tested
@@ -25,7 +26,7 @@ utils_generate_random_some_numbers_from_array() {
   size=$(($RANDOM %$half + $half))
   local -a subset
   index=0
-  shuffled=$(shuf -i 0-$((${#array[@]} - 1)) -n $size | sort)
+  shuffled=$(shuf -e "${array[@]}" -n $size | sort)
   while IFS='' read -r num;do
     subset[$index]=$num
     ((index++))
@@ -45,9 +46,8 @@ utils_array_to_associative_array() {
 
 #! tested
 utils_generate_random_numbers() {
-  local size=$(($RANDOM % $1 + 1))
-  arr=$(seq 1 $size)
-
+  local size=$(($RANDOM % $2 + 1))
+  arr=($(seq $1 $(($1 + $size))))
   echo $(shuf -e "${arr[@]}" | head -n $size)
 }
 
@@ -74,7 +74,7 @@ utils_string_to_associative_array() {
     IFS='=' read -ra pair <<<"$element"
     key=$(echo ${pair[0]} | tr -d '[]')
     val=${pair[1]}
-    arr[$key]=$val
+    arr["$key"]="$val"
   done
 }
 
@@ -95,3 +95,4 @@ utils_compare_array() {
     echo false
   fi
 }
+

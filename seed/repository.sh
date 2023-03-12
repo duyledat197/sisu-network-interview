@@ -7,7 +7,7 @@ seed_create_result_nodes() {
   local size=$2
   values=$(utils_get_values dt result_params "$size")
   sqlite3 $RESULT_DB_PATH <<EOF
-  INSERT INTO result_nodes (node_id, position, port) VALUES $values;
+  INSERT INTO result_nodes (node_id, position, port) VALUES $values ON CONFLICT DO NOTHING;
 EOF
 }
 
@@ -30,8 +30,8 @@ seed_create_neighbour_nodes() {
     INSERT INTO neighbour_nodes (node_id, neighbour_id, neighbour_port) 
     SELECT 
       $node_id as node_id,
-      node_id as neighbour_id,
-      port as neighbour_port
+      rn.node_id as neighbour_id,
+      rn.port as neighbour_port
     FROM db2.result_nodes as rn
     WHERE rn.node_id IN ($(utils_join_strings nb_nodes))
 ;"
@@ -42,6 +42,6 @@ seed_create_neighbour_nodes() {
     INSERT INTO neighbour_nodes (node_id, neighbour_id, position) 
     VALUES $values
     ON CONFLICT(node_id, neighbour_id) 
-    DO UPDATE SET position=EXCLUDED.position
+    DO UPDATE SET position=EXCLUDED.position;
     "
 }

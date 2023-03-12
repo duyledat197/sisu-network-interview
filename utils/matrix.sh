@@ -1,14 +1,14 @@
 #!/usr/local/bin/bash
 
 utils_get_matrix_from_nodes() {
-  local -n nodes=$1
+  local -n nds=$1
   local -n result=$2
   utils_init_square_matrix result $MAX_NODES
 
-  for ((i = 0; i < ${#nodes[@]}; i++)); do
+  for ((i = 0; i < ${#nds[@]}; i++)); do
     for ((j = 0; j < $i; j++)); do
-      first=${nodes[$i]}
-      second=${nodes[$j]}
+      first=$((${nds[$i]} + "$first_port"))
+      second=$((${nds[$j]} + "$first_port"))
       result[$first,$second]=$((result[$first,$second] + 1))
     done
   done
@@ -27,11 +27,11 @@ utils_compare_matrix() {
 
 #! tested
 utils_init_square_matrix() {
-  local -n matrix=$1
+  local -n i_matrix=$1
   local size=$2
   for ((i = 0; i < $size; i++)); do
     for ((j = 0; j < $size; j++)); do
-      matrix[$i,$j]=0
+      i_matrix[$(($i + $first_port)),$(($j + $first_port))]=0
     done
   done
 }
@@ -42,9 +42,12 @@ utils_add_square_matrix() {
   local -n matrixB=$2
   local -n res=$3
   local size=$4
-  for ((i = 0; i < $size; i++)); do
+  echo "utils_add_square_matrix $i"
+  for ((m_i = 0; m_i < $size; m_i++)); do
     for ((j = 0; j < $size; j++)); do
-      res[$i,$j]=$((matrixA[$i,$j] + matrixB[$i,$j]))
+      first=$(($m_i + $first_port))
+      second=$(($j + $first_port))
+      res[$first,$second]=$((${matrixA[$first,$second]} + ${matrixB[$first,$second]}))
     done
   done
 }

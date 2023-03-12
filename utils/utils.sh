@@ -18,3 +18,7 @@ utils_get_min_free_port() {
   done
   echo $port
 }
+
+ uuid() {
+  echo $(uuidgen | tr -d - | tr -d '\n' | tr '[:upper:]' '[:lower:]'  | pbcopy && pbpaste && echo)
+ }

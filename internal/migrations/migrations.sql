@@ -25,7 +25,7 @@ DROP TABLE IF EXISTS selections;
 CREATE TABLE IF NOT EXISTS selections (
   selection_id TEXT,
   neighbour_id INT,
-  data TEXT,
+  data INT [],
   UNIQUE (selection_id, neighbour_id)
 );
 

@@ -1,47 +1,47 @@
 #!/usr/local/bin/bash
 
 pkg_snow_ball() {
+  # set -x
   #! load configs
-  sample_size=$SAMPLE_SIZE
-  node_id=$NODE_ID
-
- 
-  preference=$(seq 1 $MAX_NODES)
-
+  sample_size="$SAMPLE_SIZE" 
+  preference=($(seq 1 "$MAX_NODES"))
   consecutiveSuccesses=0
+  utils_init_array_by_length consecutiveSuccesses "$MAX_NODES"
   while true; do
     #* create  a selection 
-    selection_id=$(uuidgen)
+    selection_id=$(uuid)
     local -A neighbour_nodes
     repo_retrieve_neighbour_nodes neighbour_nodes
-    chosen_nodes=($(utils_generate_random_some_numbers_from_array neighbour_nodes $sample_size))
+    chosen_nodes=($(utils_generate_random_some_numbers_from_array neighbour_nodes "$sample_size"))
     for chosen_node in "${chosen_nodes[@]}"
     do
       local -A request
       request[target_port]=$chosen_node
       request[selection_id]=$selection_id
-      request[from_port]=$node_id
+      request[from_port]="$node_id"
       client_request_get_neighbour_nodes request &
     done
     wait
-    sleep 2
+    sleep 5
     local -a response_list
-    repo_retrieve_selection_neighbour_nodes $selection_id response_list
+    repo_retrieve_selection_neighbour_nodes "$selection_id" response_list
+    # print_associative_array response_list
+    local -a pref 
+    local -a res_pref
+    pkg_retrieve_preference response_list pref res_pref
 
-
-
-    pref=$(pkg_retrieve_preference response_list)
-    if [ ${#pref[@]} == 0 ]; then
+    if [[ $(pkg_check_condition res_pref) ]]; then 
       consecutiveSuccesses=0
       continue
     fi
+
     if utils_compare_array preference pref; then
       ((consecutiveSuccesses++))
     else
       preference=("${pref[@]}")
       consecutiveSuccesses=1
     fi
-    if $consecutiveSuccesses >= $beta; then
+    if [[ $consecutiveSuccesses -ge "$beta" ]]; then
       pkg_decide preference
       break
     fi
@@ -49,63 +49,65 @@ pkg_snow_ball() {
 }
 
 pkg_retrieve_preference() {
-  sample_size=$SAMPLE_SIZE
   alpha=$QUORUM_SIZE
   beta=$DECISION_THRESHOLD
 
   local -A sum_matrix
-  local -n response_list=$1
+  local -n res_list=$1
+  local -n res_pref=$2
 
-  utils_init_square_matrix sum_matrix $MAX_NODES
-  for i in "${!response_list[@]}"; do
+  utils_init_square_matrix sum_matrix "$MAX_NODES"
+  echo "pkg_retrieve_preference"
+  for i in "${!res_list[@]}"; do
 
-    local -a nodes=(${response_list[@]})
+    nodes=(${res_list[@]})
     local -A matrix
-    local -A preference
     utils_get_matrix_from_nodes nodes matrix
-    utils_matrix_addition sum_matrix matrix
+    utils_add_square_matrix sum_matrix matrix sum_matrix "$MAX_NODES"
   done
 
-  local -A result_matrix
-  utils_init_square_matrix result_matrix $MAX_NODES
+  print_associative_array sum_matrix
+
+  local -n result_matrix=$3
+  utils_init_square_matrix result_matrix "$MAX_NODES"
   for key in "${!sum_matrix[@]}"; do
-    if ${sum_matrix[$key]} >= $alpha; then
+    if [ "${sum_matrix[$key]}" -ge "$alpha" ]; then
       result_matrix[$key]=1
     fi
   done
-
+  # print_associative_array result_matrix
   local -A depth
   pkg_retrieve_graph result_matrix depth
 
-  declare -a preference
   declare -a mark
   index=0
   utils_init_array_by_length mark "$MAX_NODES"
+  cycle=true
+  
+  for i in "${!depth[@]}"; do
+    if [ "${depth[$i]}" -eq 0 ]; then
+      dfs "$i"
+    fi
+  done
+  echo $cycle
+}
 
-  dfs() {
+dfs() {
     u=$1
-    if [[ ! -z ${mark[$u]} ]]; then
-      echo "error: $u already exists"
+    if [[ -n ${mark[$u]} || $cycle ]]; then
+      cycle=true
       return
     fi
     mark[$u]=1
-    preference[$index]=$u
+    res_pref[$index]=$u
     ((index++))
     for ((v = 0; v < depth[$u]; v++)); do
       depth[$v]=$((${depth[$v]} - ${result_matrix[$pos]}))
-      if [ "${depth[$v]}" == 0 ]; then
+      if [ "${depth[$v]}" -eq 0 ]; then
         dfs $v
       fi
     done
   }
-  for i in "${!depth[@]}"; do
-    if [ ${depth[$i]} == 0 ]; then
-      dfs $i
-    fi
-  done
-  return "${preference[@]}"
-}
-
 #! tested
 pkg_retrieve_graph() {
   local -n matrix=$1
@@ -137,7 +139,17 @@ pkg_decide() {
 
   repo_upsert_neighbour_nodes data $index
 
-  if [[ ! -z $inform_port ]]; then
+  if [[ -n $inform_port ]]; then
     echo "node=$node_id calculate done with result: ${result[*]}" | nc localhost "$inform_port"
   fi
+}
+
+pkg_check_condition() {
+  local -n sum_mtrx=$1
+  for key in "${!sum_matrix[@]}"; do
+    if [ "${sum_mtrx[$key]}" -gt 0 ]; then
+      echo true
+    fi
+  done
+  echo false
 }
