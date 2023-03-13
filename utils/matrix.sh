@@ -16,11 +16,8 @@ utils_get_matrix_from_nodes() {
         first=${nds[$i,$j]}
         second=${arr[$k]}
         result[$first,$second]=$((${result[$first,$second]} + 1))
-        # echo "i=$i j=$j k=$k first=$first second=$second"
       done
-      # set -x
       arr[$j]=${nds[$i,$j]}
-      # set +x
     done
   done
 }

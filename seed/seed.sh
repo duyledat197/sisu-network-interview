@@ -17,7 +17,6 @@ seed_init_node() {
 
   # TODO: each node present correct or not
   if $is_correct; then
-    result=($(seed_get_result_nodes result))
     neighbour_nodes=($(utils_generate_random_some_numbers_from_array result))
   else
     neighbour_nodes=($(utils_generate_random_numbers $MAX_NODES))
@@ -25,7 +24,7 @@ seed_init_node() {
   #* write data
   local -A data
   for i in "${!neighbour_nodes[@]}"; do
-    data[$i,node_id]=$(($first_port + $i))
+    data[$i,node_id]=$node_id
     data[$i,neighbour_id]=${neighbour_nodes[$i]}
     data[$i,position]=$((i + 1))
   done
@@ -39,16 +38,16 @@ seed_init_node() {
 
 seed_init_nodes() {
   random_nodes=($(utils_create_random_permutation_array $first_port "$MAX_NODES"))
-  # echo ${random_nodes[@]}
+  echo "correct answer: ${random_nodes[*]}"
   correct_from=$(($MAX_NODES * 90 / 100)) #TODO: for 70% nodes storage correct data
   for i in "${!random_nodes[@]}"; do
     is_correct=true
     if [[ i -gt $correct_from ]]; then
       is_correct=false
     fi
-    seed_init_node "${random_nodes[$i]}" $is_correct &
+    result=($(seed_get_result_nodes result))
+    seed_init_node "${random_nodes[$i]}" $is_correct 
   done
-  wait
 }
 
 seed_result() {

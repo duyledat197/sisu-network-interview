@@ -24,13 +24,13 @@ utils_generate_random_some_numbers_from_array() {
   if [[ ! -z $2 ]]; then
     size=$2
   else
-    half=$((${#array[@]}/2))
-    size=$(($RANDOM %$half + $half))
+    len=${#array[@]}
+    size=$(($RANDOM %$len + $len - 3 ))
   fi
   
   local -a subset
   index=0
-  shuffled=$(shuf -e "${array[@]}" -n $size | sort)
+  shuffled=$(shuf -e "${array[@]}" -n $size)
   while IFS='' read -r num;do
     subset[$index]=$num
     ((index++))
@@ -50,7 +50,7 @@ utils_array_to_associative_array() {
 
 #! tested
 utils_generate_random_numbers() {
-  local size=$(($RANDOM % $MAX_NODES + 1))
+  local size=$(($RANDOM % 3 + $MAX_NODES - 3))
   arr=($(seq $first_port $(($first_port + $size))))
   echo $(shuf -e "${arr[@]}" | head -n $size)
 }
