@@ -3,23 +3,22 @@
 pkg_snow_ball() {
   # set -x
   #! load configs
-  sample_size="$SAMPLE_SIZE" 
+  sample_size="$SAMPLE_SIZE"
   preference=($(seq 1 "$MAX_NODES"))
   consecutiveSuccesses=0
   while true; do
     echo "consecutiveSuccesses=$consecutiveSuccesses"
-    #* create  a selection 
+    #* create  a selection
     selection_id=$(uuid)
     local -A neighbour_nodes
     repo_retrieve_neighbour_nodes neighbour_nodes
     chosen_nodes=($(utils_generate_random_some_numbers_from_array neighbour_nodes "$sample_size"))
-    for chosen_node in "${chosen_nodes[@]}"
-    do
+    for chosen_node in "${chosen_nodes[@]}"; do
       local -A request
       request[target_port]=$chosen_node
       request[selection_id]=$selection_id
       request[from_port]="$node_id"
-      client_request_get_neighbour_nodes request 
+      client_request_get_neighbour_nodes request
       sleep 0.5
     done
     total=$(repo_count_selection_by_id "$selection_id")
@@ -31,7 +30,7 @@ pkg_snow_ball() {
     repo_retrieve_selection_neighbour_nodes "$selection_id" preferences
     pkg_retrieve_preference preferences current_preference greater_matrix cycle
 
-    if [[ ! $(pkg_check_condition greater_matrix) || $cycle ]]; then 
+    if [[ ! $(pkg_check_condition greater_matrix) || $cycle ]]; then
       consecutiveSuccesses=0
       continue
     fi
@@ -63,46 +62,59 @@ pkg_retrieve_preference() {
 
   utils_get_matrix_from_nodes prefs sum_matrix
   utils_init_square_matrix result_matrix "$MAX_NODES"
+  echo "prefs"
+  for ((i=0; i<= sample_size; i++));do
+    echo -n "{"
+    for ((j=0; j<= MAX_NODES; j++));do
+      echo -n "${prefs[$i,$j]}, "
+  done
+  echo  "}"
+  done
 
   for key in "${!sum_matrix[@]}"; do
     if [ "${sum_matrix[$key]}" -ge "$alpha" ]; then
-      echo "key=$key sum=${sum_matrix[$key]}"
       result_matrix[$key]=1
     fi
+    echo "result_matrix"
+  for ((i=first_port; i<=first_port + MAX_NODES ; i++));do
+    echo -n "{"
+    for ((j=first_port; j<= first_port + MAX_NODES; j++));do
+      echo -n "${result_matrix[$i,$j]}, "
+  done
+  echo  "}"
+  done
   done
   local -a depth
-  pkg_retrieve_graph result_matrix depth
-
-  declare -a mark
-  index=0
+  local -a mark
   utils_init_array_by_length mark "$MAX_NODES"
-  dfs() {
-    u=$1
-    if [[ ${mark[$u]} -gt "0" ]]; then
-      c=true
-      return
+  local -a stack
+  stackIndex=0
+
+  for ((i = first_port; i <= first_port + MAX_NODES; i++)); do
+    if [[ "${depth[$i]}" -eq "0" ]]; then
+      ((stackIndex++))
+        stack[$stackIndex]=$i
     fi
-    mark[$u]=1
+  done
+ 
+   index=0
+  while [[ $stackIndex -gt 0 ]];do
+    u=${stack[$stackIndex]}
+    ((stackIndex--))
     res_pref[$index]=$u
     ((index++))
-    for ((v = first_port; v < first_port + MAX_NODES; v++)); do
-        if [[ "${result_matrix[$v,$u]}" -eq "1" ]]; then
-           ((depth[$v]-- ))
-          if [[ "${depth[$v]}" -eq "0" ]]; then
-            dfs "$v"
-          fi
-        fi
-      
-    done
-  }
-  for ((i = first_port; i < first_port + MAX_NODES; i++)); do
-    if [[ "${depth[$i]}" -eq "0" ]]; then
-      dfs "$i"
+   for ((v = first_port; v <= first_port + MAX_NODES; v++)); do
+    if [[ ${result_matrix[$v,$u]} -eq "1" ]]; then
+      ((depth[$v]--))
+      if [[ ${depth[$v]} -eq "0" ]]; then
+        ((stackIndex++))
+        stack[$stackIndex]=$v
+      fi
     fi
+   done
   done
   echo "res_pref=${res_pref[*]}"
 }
-
 
 #! tested
 pkg_retrieve_graph() {
@@ -111,12 +123,15 @@ pkg_retrieve_graph() {
   local size=$MAX_NODES
 
   utils_init_array_by_length d "$size"
-  for ((i = first_port; i < first_port + size; i++)); do
-    for ((j = first_port; j < first_port + size; j++)); do
+  for ((i = first_port; i <= first_port + size; i++)); do
+    for ((j = first_port; j <= first_port + size; j++)); do
       if [[ "${matrix[$i,$j]}" -ge 1 ]]; then
-       ((d[$i] ++))
+        ((d[$i]++))
       fi
     done
+  done
+  for ((i = first_port; i <= first_port + size; i++)); do
+    echo "i=$i depth=${depth[$i]}"
   done
 }
 

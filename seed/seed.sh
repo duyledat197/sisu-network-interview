@@ -17,7 +17,7 @@ seed_init_node() {
 
   # TODO: each node present correct or not
   if $is_correct; then
-    neighbour_nodes=($(utils_generate_random_some_numbers_from_array result))
+    neighbour_nodes=(${result[@]})
   else
     neighbour_nodes=($(utils_generate_random_numbers $MAX_NODES))
   fi
@@ -29,6 +29,7 @@ seed_init_node() {
     data[$i,position]=$((i + 1))
   done
 
+  echo ${neighbour_nodes[@]}
   # working with db
   migrate_data
   seed_create_neighbour_nodes data neighbour_nodes

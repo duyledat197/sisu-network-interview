@@ -6,8 +6,8 @@ utils_get_matrix_from_nodes() {
   utils_init_square_matrix result $MAX_NODES
 
 # print_associative_array nds
-  for ((i = 0; i < sample_size; i++)); do
-    for ((j = 0; j < MAX_NODES; j++)); do
+  for ((i = 0; i <= sample_size; i++)); do
+    for ((j = 0; j <= MAX_NODES; j++)); do
       if [[ -z ${nds[$i,$j]} ]]; then
         break
       fi
