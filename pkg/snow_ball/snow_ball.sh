@@ -6,8 +6,8 @@ pkg_snow_ball() {
   sample_size="$SAMPLE_SIZE" 
   preference=($(seq 1 "$MAX_NODES"))
   consecutiveSuccesses=0
-  utils_init_array_by_length consecutiveSuccesses "$MAX_NODES"
   while true; do
+    echo "consecutiveSuccesses=$consecutiveSuccesses"
     #* create  a selection 
     selection_id=$(uuid)
     local -A neighbour_nodes
@@ -15,30 +15,34 @@ pkg_snow_ball() {
     chosen_nodes=($(utils_generate_random_some_numbers_from_array neighbour_nodes "$sample_size"))
     for chosen_node in "${chosen_nodes[@]}"
     do
+      # echo "chosen_node=$chosen_node"
       local -A request
       request[target_port]=$chosen_node
       request[selection_id]=$selection_id
       request[from_port]="$node_id"
-      client_request_get_neighbour_nodes request &
+      client_request_get_neighbour_nodes request 
+      sleep 0.5
     done
-    wait
-    sleep 5
-    local -a response_list
-    repo_retrieve_selection_neighbour_nodes "$selection_id" response_list
-    # print_associative_array response_list
-    local -a pref 
-    local -a res_pref
-    pkg_retrieve_preference response_list pref res_pref
+    total=$(repo_count_selection_by_id "$selection_id")
 
-    if [[ $(pkg_check_condition res_pref) ]]; then 
+    local -a preferences
+    local -a current_preference
+    local -A greater_matrix
+    cycle=false
+    repo_retrieve_selection_neighbour_nodes "$selection_id" preferences
+    pkg_retrieve_preference preferences current_preference greater_matrix cycle
+    # debug_matrix greater_matrix
+
+    if [[ ! $(pkg_check_condition greater_matrix) || $cycle ]]; then 
       consecutiveSuccesses=0
       continue
     fi
-
-    if utils_compare_array preference pref; then
+    # set -x
+    if [[ $(utils_compare_array preference current_preference) = true ]]; then
       ((consecutiveSuccesses++))
+      # set +x
     else
-      preference=("${pref[@]}")
+      preference=("${current_preference[*]}")
       consecutiveSuccesses=1
     fi
     if [[ $consecutiveSuccesses -ge "$beta" ]]; then
@@ -51,86 +55,76 @@ pkg_snow_ball() {
 pkg_retrieve_preference() {
   alpha=$QUORUM_SIZE
   beta=$DECISION_THRESHOLD
+  sample_size="$SAMPLE_SIZE"
 
   local -A sum_matrix
-  local -n res_list=$1
+  local -n prefs=$1
   local -n res_pref=$2
-
-  utils_init_square_matrix sum_matrix "$MAX_NODES"
-  echo "pkg_retrieve_preference"
-  for i in "${!res_list[@]}"; do
-
-    nodes=(${res_list[@]})
-    local -A matrix
-    utils_get_matrix_from_nodes nodes matrix
-    utils_add_square_matrix sum_matrix matrix sum_matrix "$MAX_NODES"
-  done
-
-  print_associative_array sum_matrix
-
   local -n result_matrix=$3
+  local -n cycle=$4
+
+  utils_get_matrix_from_nodes prefs sum_matrix
   utils_init_square_matrix result_matrix "$MAX_NODES"
+
   for key in "${!sum_matrix[@]}"; do
     if [ "${sum_matrix[$key]}" -ge "$alpha" ]; then
       result_matrix[$key]=1
     fi
   done
-  # print_associative_array result_matrix
-  local -A depth
+  local -a depth
   pkg_retrieve_graph result_matrix depth
 
   declare -a mark
   index=0
   utils_init_array_by_length mark "$MAX_NODES"
-  cycle=true
-  
-  for i in "${!depth[@]}"; do
-    if [ "${depth[$i]}" -eq 0 ]; then
-      dfs "$i"
-    fi
-  done
-  echo $cycle
-}
-
-dfs() {
+  dfs() {
     u=$1
-    if [[ -n ${mark[$u]} || $cycle ]]; then
+    if [[ ${mark[$u]} -gt "0" ]]; then
       cycle=true
       return
     fi
     mark[$u]=1
     res_pref[$index]=$u
     ((index++))
-    for ((v = 0; v < depth[$u]; v++)); do
-      depth[$v]=$((${depth[$v]} - ${result_matrix[$pos]}))
-      if [ "${depth[$v]}" -eq 0 ]; then
-        dfs $v
+    for ((v = first_port; v < first_port + MAX_NODES; v++)); do
+      depth[$v]=$((${depth[$v]} - ${result_matrix[$v,$u]}))
+      if [[ "${depth[$v]}" -eq "0" ]]; then
+        dfs "$v"
       fi
     done
   }
+  for ((i = first_port; i < first_port + MAX_NODES; i++)); do
+    if [[ "${depth[$i]}" -eq "0" ]]; then
+      dfs "$i"
+    fi
+  done
+}
+
+
 #! tested
 pkg_retrieve_graph() {
   local -n matrix=$1
-  local -n dept=$2
+  local -n d=$2
   local size=$MAX_NODES
 
-  utils_init_array_by_length dept "$size"
-  for ((i = 0; i < "$size"; i++)); do
-    for ((j = 0; j < "$size"; j++)); do
-      if [ "${matrix[$i,$j]}" == 1 ]; then
-        depth[$i]=$((depth[$i] + 1))
+  utils_init_array_by_length d "$size"
+  for ((i = first_port; i < first_port + size; i++)); do
+    for ((j = first_port; j < first_port + size; j++)); do
+      if [[ "${matrix[$i,$j]}" -ge 1 ]]; then
+        d[$i]=$((${d[$i]} + 1))
       fi
     done
   done
 }
 
 pkg_decide() {
-  local -n result=$1
+  local -n decied_preference=$1
   local -A data
   index=0
+  echo ${decied_preference[*]}
   for i in "${!result[@]}"; do
-    val=${result[$i]}
-    pos=$i
+    val=${decied_preference[$i]}
+    pos=$(($i + 1))
     data[$index,node_id]=$node_id
     data[$index,neighbour_id]=$val
     data[$index,position]=$pos
@@ -140,7 +134,7 @@ pkg_decide() {
   repo_upsert_neighbour_nodes data $index
 
   if [[ -n $inform_port ]]; then
-    echo "node=$node_id calculate done with result: ${result[*]}" | nc localhost "$inform_port"
+    echo "node=$node_id calculate done with result: ${decied_preference[*]}" | nc localhost "$inform_port"
   fi
 }
 

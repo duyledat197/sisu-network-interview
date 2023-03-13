@@ -17,11 +17,11 @@ start_server() {
   echo "node_id=$node_id listening in port=$port inform_port=$inform_port"
 
   while true; do
-    echo $port
+    # echo $port
     nc -l "$port" | while read -r req_str; do
       local -A request
       local -A response
-      echo "received message: $req_str"
+      # echo "received message: $req_str"
       utils_string_to_associative_array request "$req_str"
       #? request
       from_port=${request[from_port]}
@@ -40,6 +40,6 @@ start_server() {
         ;;
       esac
     done
-    echo "done"
+    # echo "done"
   done
 }

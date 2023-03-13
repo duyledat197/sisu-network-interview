@@ -2,17 +2,17 @@
 
 handle_update_data() {
    local -n req=$1
-  #  tx_id=${req[tx_id]}
-  #  if [[ $(repo_is_transaction_exists "$tx_id") -gt 0 ]];then 
-  #   return
-  #  fi
-  # repo_create_transaction "$tx_id"
-  # local -a node_ids
-  # repo_retrieve_neighbour_node_ids node_ids
-  # for i in "${node_ids[@]}";do
-  #   req["target_port"]=$i
-  #   client_request_update_data req
-  # done
+   tx_id=${req[tx_id]}
+   if [[ $(repo_is_transaction_exists "$tx_id") -gt 0 ]];then 
+    return
+   fi
+  repo_create_transaction "$tx_id"
+  local -a node_ids
+  repo_retrieve_neighbour_node_ids node_ids
+  for i in "${node_ids[@]}";do
+    req["target_port"]=$i
+    client_request_update_data req
+  done
   pkg_snow_ball
 }
 
@@ -33,6 +33,8 @@ handle_request_neighbour_nodes() {
 handle_response_neighbour_nodes() {
    local -n resp=$1
    selection_id="${resp[selection_id]}"
+   from_port="${resp[from_port]}"
+  #  echo "selection_id=$selection_id from_port=$from_port"
    data=(${resp[data]})
    IFS="," read -a dta <<<$data
    resp[data]=$(utils_join_strings data)

@@ -9,10 +9,10 @@ for f in ./configs/*.sh \
   source $f
 done
 
-export MAX_NODES=50
-export SAMPLE_SIZE=10 # 70% of max nodes
+export MAX_NODES=20
+export SAMPLE_SIZE=14 # 70% of max nodes
 export QUORUM_SIZE=7 # 70% of sample size
-export DECISION_THRESHOLD=10
+export DECISION_THRESHOLD=5
 export INFORM_PORT=10101
 
 first_port=9000

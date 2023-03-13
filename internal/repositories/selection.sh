@@ -17,10 +17,17 @@ repo_retrieve_selection_neighbour_nodes() {
   while read -r rows; do
     slice_rows=()
     IFS=',' read -ra slice_rows <<< "$(echo "$rows" | tr -d '{}')"
+    # echo "rows=${slice_rows[@]}"
     for col in "${!slice_rows[@]}"; do 
     val=${slice_rows[$col]}
      result[$row,$col]="$val"
     done
     ((row++))
   done <<<$q
+}
+
+repo_count_selection_by_id() {
+    local selection_id=$1
+    q=$(sqlite3 $DATA_PATH "SELECT COUNT(*) FROM selections WHERE selection_id='$selection_id';")
+    echo $q
 }

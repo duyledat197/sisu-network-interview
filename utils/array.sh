@@ -6,8 +6,7 @@ source ./utils/sql.sh
 utils_init_array_by_length() {
   local -n array=$1
   local size=$2
-
-  for ((i = 0; i < $size; i++)); do
+  for ((i = first_port; i < first_port + size; i++)); do
     array[$i]=0
   done
 }
@@ -22,8 +21,13 @@ utils_create_random_permutation_array() {
 #! tested
 utils_generate_random_some_numbers_from_array() {
   local -n array=$1
-  half=$((${#array[@]}/2))
-  size=$(($RANDOM %$half + $half))
+  if [[ ! -z $2 ]]; then
+    size=$2
+  else
+    half=$((${#array[@]}/2))
+    size=$(($RANDOM %$half + $half))
+  fi
+  
   local -a subset
   index=0
   shuffled=$(shuf -e "${array[@]}" -n $size | sort)
@@ -46,8 +50,8 @@ utils_array_to_associative_array() {
 
 #! tested
 utils_generate_random_numbers() {
-  local size=$(($RANDOM % $2 + 1))
-  arr=($(seq $1 $(($1 + $size))))
+  local size=$(($RANDOM % $MAX_NODES + 1))
+  arr=($(seq $first_port $(($first_port + $size))))
   echo $(shuf -e "${arr[@]}" | head -n $size)
 }
 
@@ -87,6 +91,7 @@ print_associative_array() {
 
 #! tested
 utils_compare_array() {
+  # set -x
   local -n matrixA=$1
   local -n matrixB=$2
   if [ "${matrixA[*]}" == "${matrixB[*]}" ]; then
@@ -94,5 +99,6 @@ utils_compare_array() {
   else
     echo false
   fi
+  # set +x
 }
 

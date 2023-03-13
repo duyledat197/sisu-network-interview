@@ -9,6 +9,7 @@ Before running the Bash program, you need to ensure that the following prerequis
 - A Bash shell is installed on your system and the version is greater than 4.0.
 - The following libraries are installed:
   - coreutils
+  - uuidgen
 - The program file has execute permission. If not, you can give it permission using the following command:
 ```
 chmod +x ./cmd/main.sh
@@ -37,6 +38,7 @@ bash -x ./test/test_retrieve_graph.sh 2> out.log
 bash -x ./test/test_create_neighbour_node.sh 2> out.log
 bash -x ./test/test_tcp.sh 2> out.log
 bash -x ./test/test_snow_ball.sh 2> out.log
+bash -x ./test/test_all.sh 2> out.log
 
 ```
 

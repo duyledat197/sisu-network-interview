@@ -22,12 +22,9 @@ EOF
 repo_retrieve_neighbour_nodes() {
   local index=0
   local -n resp=$1
-  q=$(sqlite3 $DATA_PATH "SELECT neighbour_id, neighbour_port, position FROM neighbour_nodes WHERE node_id = $node_id ORDER BY position ASC;")
-  while IFS='|' read -r neighbour_id neighbour_port position; do
-    resp[$index,node_id]=$node_id
-    resp[$index,neighbour_id]=$neighbour_id
-    resp[$index,neighbour_port]=$neighbour_port
-    resp[$index,position]=$position
+  q=$(sqlite3 $DATA_PATH "SELECT neighbour_id FROM neighbour_nodes WHERE node_id = $node_id ORDER BY position ASC;")
+  while read -r neighbour_id; do
+    resp[$index]=$neighbour_id
     ((index++))
   done <<<$q
 }
